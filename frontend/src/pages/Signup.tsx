@@ -48,15 +48,33 @@ const Signup: React.FC = () => {
         body: JSON.stringify({ email })
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        let errorMsg = `Erreur inconnue (${response.status})`;
+        if (response.status === 404) {
+          errorMsg = "Route /signup introuvable (404). Vérifie l'URL du backend.";
+        } else if (response.status === 500) {
+          errorMsg = "Erreur serveur (500). Vérifie les logs du backend.";
+        } else if (response.status === 400) {
+          const err = await response.json().catch(() => null);
+          errorMsg = err?.detail || "Requête invalide (400). Vérifie le format envoyé.";
+        } else if (response.status === 0) {
+          errorMsg = "Impossible de contacter le backend. Vérifie l'URL/API.";
+        }
+        setErrors(prev => ({ ...prev, email: errorMsg }));
+        throw new Error(errorMsg);
       }
       const data = await response.json();
       console.log('Success:', data);
       setIsSuccess(true);
       setEmail('');
-    } catch (error) {
+    } catch (error: any) {
+      let errorMsg = "Erreur lors de l'inscription. Veuillez réessayer.";
+      if (error instanceof TypeError) {
+        errorMsg = "Erreur réseau : impossible de contacter le backend. Vérifie l'URL/API.";
+      } else if (typeof error?.message === 'string') {
+        errorMsg = error.message;
+      }
       console.error('Erreur lors de l’inscription :', error);
-      setErrors(prev => ({ ...prev, email: "Erreur lors de l'inscription. Veuillez réessayer." }));
+      setErrors(prev => ({ ...prev, email: errorMsg }));
     }
   };
 

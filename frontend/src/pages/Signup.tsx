@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Navbar';
 import Footer from '../components/Footer';
+// Utilise la variable d'environnement VITE_API_URL si définie, sinon fallback sur /api (utile en dev)
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
 
 const Signup: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -40,7 +42,7 @@ const Signup: React.FC = () => {
       return;
     }
     try {
-      const response = await fetch('/api/signup', {
+      const response = await fetch(`${API_BASE_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
